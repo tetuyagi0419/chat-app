@@ -37,7 +37,7 @@ export function LoginForm() {
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${location.origin}/chat` },
+      options: { redirectTo: `${location.origin}/auth/callback` },
     })
   }
 
