@@ -1,0 +1,24 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: chat.spec.ts >> チャット >> チャットページが正しく表示される
+- Location: tests/chat.spec.ts:19:7
+
+# Error details
+
+```
+Error: browserType.launch: Executable doesn't exist at /ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell
+╔════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just updated to 1.59.1.      ║
+║ Please update docker image as well.                    ║
+║ -  current: mcr.microsoft.com/playwright:v1.50.1-noble ║
+║ - required: mcr.microsoft.com/playwright:v1.59.1-noble ║
+║                                                        ║
+║ <3 Playwright Team                                     ║
+╚════════════════════════════════════════════════════════╝
+```

@@ -11,3 +11,26 @@ services:
       - /app/.next
     env_file:
       - .env.local
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      app:
+        condition: service_healthy
+    env_file:
+      - .env.local
+    environment:
+      - BASE_URL=http://host.docker.internal:3000
+    command: npx playwright test
+    volumes:
+      - ./tests:/app/tests
+      - ./playwright.config.ts:/app/playwright.config.ts
+      - ./playwright-report:/app/playwright-report
