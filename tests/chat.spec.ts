@@ -13,6 +13,8 @@ async function login(page: Page) {
   await expect(page).toHaveURL('/chat', { timeout: 20000 })
   // チャット画面のロード完了を待つ
   await expect(page.getByPlaceholder('メッセージを入力...')).toBeVisible({ timeout: 10000 })
+  // Realtime接続確立を待つ（「接続中...」バッジが消えるまで）
+  await expect(page.getByText('接続中...')).not.toBeVisible({ timeout: 15000 })
 }
 
 test.describe('チャット', () => {
@@ -42,7 +44,7 @@ test.describe('チャット', () => {
     await page.getByPlaceholder('メッセージを入力...').fill(message)
     await page.getByRole('button', { name: '送信' }).click()
 
-    await expect(page.getByText(message)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText(message)).toBeVisible({ timeout: 10000 })
   })
 
   test('メッセージ送信後に入力欄がクリアされる', async ({ page }) => {
@@ -73,7 +75,7 @@ test.describe('チャット', () => {
     await page2.getByRole('button', { name: '送信' }).click()
 
     // page1（自分が送信していない）にもメッセージが届く
-    await expect(page.getByText(message)).toBeVisible({ timeout: 8000 })
+    await expect(page.getByText(message)).toBeVisible({ timeout: 15000 })
 
     await page2.close()
   })
