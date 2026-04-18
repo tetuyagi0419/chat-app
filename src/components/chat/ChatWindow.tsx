@@ -29,12 +29,12 @@ export function ChatWindow({ userId, roomId }: Props) {
         .from('messages')
         .select('*, profile:profiles(username, avatar_url)')
         .eq('room_id', roomId)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(50)
       if (error) {
         setFetchError('メッセージの読み込みに失敗しました')
       } else {
-        if (data) setMessages(data)
+        if (data) setMessages(data.reverse())
       }
       setLoading(false)
     }
