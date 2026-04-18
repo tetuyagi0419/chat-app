@@ -23,11 +23,23 @@ export async function middleware(request: NextRequest) {
     { cookies: cookieMethods }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  // セッションエラーの場合はCookieを削除してログインページへ
+  if (error?.code === 'refresh_token_not_found') {
+    const response = NextResponse.redirect(new URL('/login', request.url))
+    request.cookies.getAll().forEach(cookie => {
+      if (cookie.name.startsWith('sb-')) {
+        response.cookies.delete(cookie.name)
+      }
+    })
+    return response
+  }
 
   if (!user && request.nextUrl.pathname.startsWith('/chat')) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
+
   if (user && request.nextUrl.pathname === '/login') {
     return NextResponse.redirect(new URL('/chat', request.url))
   }
@@ -36,7 +48,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)',],
 }
