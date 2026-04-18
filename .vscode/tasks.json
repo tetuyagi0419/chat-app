@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Test: 全テスト実行",
+      "type": "shell",
+      "command": "docker compose run --rm test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: 認証テストのみ",
+      "type": "shell",
+      "command": "docker compose run --rm test npx playwright test tests/auth.spec.ts",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: チャットテストのみ",
+      "type": "shell",
+      "command": "docker compose run --rm test npx playwright test tests/chat.spec.ts",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: レポートを開く",
+      "type": "shell",
+      "command": "docker compose run --rm -p 9323:9323 test npx playwright show-report --host 0.0.0.0",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "App: 開発サーバー起動",
+      "type": "shell",
+      "command": "docker compose up app",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
