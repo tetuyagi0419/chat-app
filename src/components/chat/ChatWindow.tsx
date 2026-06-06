@@ -22,26 +22,57 @@ export function ChatWindow({ userId, roomId }: Props) {
   const [realtimeStatus, setRealtimeStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting')
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // 過去メッセージ取得
-  useEffect(() => {
-    const fetch = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*, profile:profiles(username, avatar_url)')
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: false })
-        .limit(50)
-      if (error) {
-        setFetchError('メッセージの読み込みに失敗しました')
-      } else {
-        if (data) setMessages(data.reverse())
-      }
-      setLoading(false)
-    }
-    fetch()
-  }, [roomId, supabase])
+  const PAGE_SIZE = 50
+const [hasMore, setHasMore] = useState(true)
+const [oldestDate, setOldestDate] = useState<string | null>(null)
+const [loadingMore, setLoadingMore] = useState(false)
+const topRef = useRef<HTMLDivElement>(null)
 
-  // リアルタイム購読
+// 初回メッセージ取得
+useEffect(() => {
+  const fetch = async () => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*, profile:profiles(username, avatar_url)')
+      .eq('room_id', roomId)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
+
+    if (error) {
+      setFetchError('メッセージの読み込みに失敗しました')
+    } else if (data) {
+      setMessages(data.reverse())
+      setOldestDate(data[data.length - 1]?.created_at ?? null)
+      if (data.length < PAGE_SIZE) setHasMore(false)
+    }
+    setLoading(false)
+  }
+  fetch()
+}, [roomId, supabase])
+
+// 過去メッセージをさらに取得
+const loadMore = async () => {
+  if (!hasMore || loadingMore || !oldestDate) return
+  setLoadingMore(true)
+
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*, profile:profiles(username, avatar_url)')
+    .eq('room_id', roomId)
+    .order('created_at', { ascending: false })
+    .lt('created_at', oldestDate)
+    .limit(PAGE_SIZE)
+
+  if (!error && data) {
+    setMessages(prev => [...data.reverse(), ...prev])
+    setOldestDate(data[data.length - 1]?.created_at ?? null)
+    if (data.length < PAGE_SIZE) setHasMore(false)
+  }
+  setLoadingMore(false)
+}
+
+
+    // リアルタイム購読
   useEffect(() => {
     const channel = supabase
       .channel(`room:${roomId}`)
@@ -116,6 +147,26 @@ export function ChatWindow({ userId, roomId }: Props) {
       </div>
 
       {/* メッセージ一覧 */}
+      {/* メッセージ一覧の先頭に追加 */}
+<div ref={topRef} />
+{hasMore && (
+  <button
+    onClick={loadMore}
+    disabled={loadingMore}
+    style={{
+      alignSelf: 'center',
+      padding: '6px 16px',
+      borderRadius: 16,
+      border: '1px solid #d1d5db',
+      background: '#fff',
+      cursor: 'pointer',
+      fontSize: 13,
+      color: '#6b7280',
+    }}
+  >
+    {loadingMore ? '読み込み中...' : '過去のメッセージを見る'}
+  </button>
+)}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: '#9ca3af' }}>読み込み中...</p>
